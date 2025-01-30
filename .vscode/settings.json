@@ -1,0 +1,11 @@
+{
+  "files.associations": {
+    "*.qc": "c",
+    "*.cb": "carbon",
+    "*.g": "carbon",
+    "*.par": "carbon",
+    "*.partial": "mustache",
+    "genesis.h": "c",
+    "types.h": "c"
+  }
+}
