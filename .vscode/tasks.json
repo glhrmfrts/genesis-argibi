@@ -10,7 +10,7 @@
             "group": "none",
             "type": "shell",
             "label": "fusion",
-            "command": "C:\\Users\\guilherme\\Downloads\\Fusion364\\Fusion.exe out\\rom.bin",
+            "command": "C:\\Fusion364\\Fusion364\\Fusion.exe out\\rom.bin",
             "problemMatcher": [],
             "dependsOn":["make"]
         },

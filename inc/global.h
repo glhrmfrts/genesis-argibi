@@ -2,6 +2,7 @@
 
 #include <genesis.h>
 #include <resources.h>
+#include "gamestate.h"
 
 #define TILEMAP_PLANE BG_A
 #define BACKGROUND_PLANE BG_B
@@ -37,3 +38,6 @@ extern Vect2D_u16 mapTileSize;
 extern Vect2D_u16 mapStartTilePos;
 extern Map* map;
 extern Map* map_bg;
+
+extern GameState startState;
+extern GameState inGameState;

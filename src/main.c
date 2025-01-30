@@ -1,83 +1,35 @@
 #include "global.h"
 #include "player.h"
 #include "map_collisiondata.h"
-
-const f16 gravityScale = FIX16(0.5);
-
-Map* map;
-Map* map_bg;
-
-void inGameJoyEvent(u16 joy, u16 changed, u16 state);
+#include "../inc/gamestate.h"
+#include "../inc/ingame.h"
+#include "../inc/start.h"
 
 
-#define SFX_IMPACT 64
+GameState startState;
+GameState inGameState;
 
 
 int main()
 {
 	SPR_init();
+	
+	JOY_setEventHandler(GS_joyHandler);
 
-	u16 ind = TILE_USER_INDEX;
+	startState.enterFunc = startInit;
+	startState.updateFunc = startUpdate;
+	startState.joyFunc = startJoyEvent;
 
-	if (true) {
-		VDP_loadTileSet(&map_bg_tileset, ind, DMA);
-		PAL_setPalette(BACKGROUND_PALETTE, map_bg_palette.data, DMA);
-		map_bg = MAP_create(&map_bg_map, BACKGROUND_PLANE, TILE_ATTR_FULL(BACKGROUND_PALETTE, FALSE, FALSE, FALSE, ind));
-		MAP_scrollTo(map_bg, 100, 100);
-		ind += map_bg_tileset.numTile;
-	}
+	inGameState.enterFunc = inGameInit;
+	inGameState.updateFunc = inGameUpdate;
+	inGameState.joyFunc = inGameJoyEvent;
 
-	VDP_loadTileSet(&map_tileset, ind, DMA);
-	PAL_setPalette(LEVEL_PALETTE, map_palette.data, DMA);
-	map = MAP_create(&map_map, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, ind));
-	MAP_scrollTo(map, 100, 100);
-	ind += map_tileset.numTile;
-
-	DMA_flushQueue();
-
-	JOY_setEventHandler(inGameJoyEvent);
-
-	XGM_setPCM(SFX_IMPACT, snd_impact, sizeof(snd_impact));
-
-	// Init collision tiles
-
-	CTILE_init(
-		res_map_layer0_data,
-		res_map_layer0_len,
-		res_map_layer0_width,
-		res_map_layer0_height
-	);
-
-	// Init player
-
-	playerInit();
-
-	// Init camera
-
-	setupCamera(newVector2D_u16(160, 112), 20, 20);
-
-	//DMA_setBufferSizeToDefault();
+	GS_change(&startState);
 
 	while (TRUE) {
-		updatePlayer();
-		updateCamera();
-		SPR_update();
+		GS_update();
 		SYS_doVBlankProcess();
 	}
 
 	return (0);
-}
-
-
-//In order to make this data more accessible from all scripts we write them into a struct from global.h
-void inGameJoyEvent(u16 joy, u16 changed, u16 state) {
-	input.joy = joy;
-	input.changed = changed;
-	input.state = state;
-
-	if ((changed & BUTTON_A) && (state & BUTTON_A)) {
-		//XGM_startPlayPCM(SFX_IMPACT, 15, SOUND_PCM_CH2);
-	}
-
-	playerInputChanged();
 }
