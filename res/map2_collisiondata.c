@@ -1,5 +1,5 @@
-#include "../res/map_collisiondata.h"
-const cTileData res_map_layer0_data[162] = {
+#include "../res/map2_collisiondata.h"
+const cTileData res_map2_layer0_data[162] = {
 { 5, 0 },
 { 5, 7 },
 { 5, 17 },
@@ -163,16 +163,24 @@ const cTileData res_map_layer0_data[162] = {
 { 5, 2421 },
 { 5, 2432 },
 };
-const cTileData res_map_layer1_data[56] = {
+const cTileData res_map2_layer1_data[64] = {
 { 4, 940 },
+{ 3, 1026 },
 { 4, 1040 },
+{ 3, 1126 },
 { 4, 1140 },
+{ 3, 1226 },
 { 4, 1240 },
 { 50, 1312 },
+{ 3, 1326 },
 { 4, 1340 },
+{ 3, 1426 },
 { 4, 1440 },
+{ 3, 1526 },
 { 4, 1540 },
+{ 3, 1626 },
 { 4, 1640 },
+{ 3, 1726 },
 { 18, 1735 },
 { 4, 1740 },
 { 4, 1800 },

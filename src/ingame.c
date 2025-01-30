@@ -1,8 +1,8 @@
 #include "../inc/ingame.h"
 #include "../inc/global.h"
-#include "../res/map_collisiondata.h"
 #include "../inc/player.h"
 #include "../inc/camera.h"
+#include "../inc/levels.h"
 
 #define SFX_IMPACT 64
 
@@ -11,37 +11,45 @@ const f16 gravityScale = FIX16(0.5);
 Map* map;
 Map* map_bg;
 
+int currentLevel = 1;
+
+void loadLevel(int level) {
+    LevelDef* ldef = &levels[level];
+
+    u16 ind = TILE_USER_INDEX;
+
+    // load backgrund
+    VDP_loadTileSet(ldef->bg.tileset, ind, DMA);
+    PAL_setPalette(BACKGROUND_PALETTE, ldef->bg.palette->data, DMA);
+    map_bg = MAP_create(ldef->bg.map, BACKGROUND_PLANE, TILE_ATTR_FULL(BACKGROUND_PALETTE, FALSE, FALSE, FALSE, ind));
+    MAP_scrollTo(map_bg, 100, 100);
+    ind += ldef->bg.tileset->numTile;
+
+    // load foreground
+	VDP_loadTileSet(ldef->fg.tileset, ind, DMA);
+	PAL_setPalette(LEVEL_PALETTE, ldef->fg.palette->data, DMA);
+	map = MAP_create(ldef->fg.map, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, ind));
+	MAP_scrollTo(map, 100, 100);
+	ind += ldef->fg.tileset->numTile;
+
+    // Init collision tiles
+
+	CTILE_init(
+		ldef->collision.data,
+		ldef->collision.len,
+		ldef->collision.width,
+		ldef->collision.height
+	);
+}
+
 void inGameInit() {
     SYS_disableInts();
 
-	u16 ind = TILE_USER_INDEX;
-
-	if (true) {
-		VDP_loadTileSet(&map_bg_tileset, ind, DMA);
-		PAL_setPalette(BACKGROUND_PALETTE, map_bg_palette.data, DMA);
-		map_bg = MAP_create(&map_bg_map, BACKGROUND_PLANE, TILE_ATTR_FULL(BACKGROUND_PALETTE, FALSE, FALSE, FALSE, ind));
-		MAP_scrollTo(map_bg, 100, 100);
-		ind += map_bg_tileset.numTile;
-	}
-
-	VDP_loadTileSet(&map_tileset, ind, DMA);
-	PAL_setPalette(LEVEL_PALETTE, map_palette.data, DMA);
-	map = MAP_create(&map_map, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, ind));
-	MAP_scrollTo(map, 100, 100);
-	ind += map_tileset.numTile;
+    loadLevel(currentLevel);
 
 	DMA_flushQueue();
 
 	XGM_setPCM(SFX_IMPACT, snd_impact, sizeof(snd_impact));
-
-	// Init collision tiles
-
-	CTILE_init(
-		res_map_layer0_data,
-		res_map_layer0_len,
-		res_map_layer0_width,
-		res_map_layer0_height
-	);
 
 	// Init player
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <genesis.h>
 
 typedef struct cTileData { u16 tileid; u16 idx; } cTileData;

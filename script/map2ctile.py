@@ -18,7 +18,7 @@ with open(filename, 'r') as fh:
   dst_file_h = open(dst_filename_h, 'w')
   dst_file_c = open(dst_filename_c, 'w')
 
-  dst_file_h.write('#pragma once\n#include <genesis.h>\n#include "collisiontile.h"\n')
+  dst_file_h.write('#pragma once\n#include <genesis.h>\n#include "../inc/collisiontile.h"\n')
   dst_file_c.write(f'#include "../{dst_filename_h}"\n')
 
   for i,layer in enumerate(data['layers']):
@@ -36,7 +36,7 @@ with open(filename, 'r') as fh:
     dst_file_h.write(f'#define {clean_filename}_layer{i}_len {non_zero_tiles}\n')
     dst_file_h.write(f'#define {clean_filename}_layer{i}_width {width}\n')
     dst_file_h.write(f'#define {clean_filename}_layer{i}_height {height}\n')
-    dst_file_h.write('extern ' + decl + ';')
+    dst_file_h.write('extern ' + decl + ';\n')
     dst_file_c.write(decl + ' = {\n')
 
     for i,tileid in enumerate(layer['data']):

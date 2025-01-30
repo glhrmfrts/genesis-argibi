@@ -6,6 +6,7 @@
     "*.par": "carbon",
     "*.partial": "mustache",
     "genesis.h": "c",
-    "types.h": "c"
+    "types.h": "c",
+    "map_collisiondata.h": "c"
   }
 }
