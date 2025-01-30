@@ -35,29 +35,27 @@ const u16 oneWayPlatformErrorCorrection = 5;
 s16 stairLeftEdge;
 const u16 stairPositionOffset = 4;
 
-Vect2D_s16 levelStartPos;
-
 //Player collider bounds position
 AABB playerBounds;
 
 void playerInit() {
 	//Create the sprite and palette for the player
-  levelStartPos.x = 105;
 
 	playerBody.sprite = SPR_addSprite(
     &player_sprite,
-    levelStartPos.x, levelStartPos.y,
+    mapStartTilePos.x << 4, mapStartTilePos.y << 4,
     TILE_ATTR(PLAYER_PALETTE, FALSE, FALSE, FALSE));
 
 	PAL_setPalette(PLAYER_PALETTE, player_sprite.palette->data, DMA);
 
 	//Set the global position of the player, the local position will be updated once we are in the main loop
-	playerBody.globalPosition = levelStartPos;
+	playerBody.globalPosition.x = mapStartTilePos.x << 4;
+	playerBody.globalPosition.y = mapStartTilePos.y << 4;
 
-	//We set collider size of the player
-	playerBody.aabb = newAABB(4, 64, 4, 64);
+	//We set collider size of the player relative to the sprite top-left
+	playerBody.aabb = newAABB(16, 48, 4, 64);
 	//This collider is thinner because if the width is >=16 it could interfere with the lateral walls
-	playerBody.climbingStairAABB = newAABB(8, 20, playerBody.aabb.min.y, playerBody.aabb.max.y);
+	playerBody.climbingStairAABB = newAABB(26, 38, playerBody.aabb.min.y, playerBody.aabb.max.y);
 
 	//Calculate where's the center point of the player
 	playerBody.centerOffset.x = ((playerBody.aabb.min.x + playerBody.aabb.max.x) >> 1);
@@ -295,6 +293,8 @@ void checkCollisions() {
 		//Right position constant as a helper
 		const u16 rx = maxTilePos.x;
 
+		bool isExit = false;
+
 		u16 rTileValue = CTILE_getTileValue(rx, y);
 		//After getting the tile value, we check if that is one of whom we can collide/trigger with horizontally
 		if (rTileValue == GROUND_TILE) {
@@ -307,6 +307,8 @@ void checkCollisions() {
 		} else if (rTileValue == LADDER_TILE) {
 			stairLeftEdge = getTileLeftEdge(rx);
 			collidingAgainstStair = TRUE;
+		} else if (rTileValue == EXIT_TILE) {
+			isExit = true;
 		}
 
 		//Left position constant as a helper
@@ -323,6 +325,12 @@ void checkCollisions() {
 		}else if (lTileValue == LADDER_TILE) {
 			stairLeftEdge = getTileLeftEdge(lx);
 			collidingAgainstStair = TRUE;
+		} else if (lTileValue == EXIT_TILE) {
+			isExit = true;
+		}
+
+		if (isExit) {
+			SYS_hardReset();
 		}
 	}
 

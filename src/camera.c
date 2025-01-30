@@ -18,6 +18,7 @@ void setupCamera(Vect2D_u16 deadZoneCenter, u16 deadZoneWidth, u16 deadZoneHeigh
 
 	//We force to update the whole layer in order to prevent wrong tile being loaded depending on the position
 	MAP_scrollToEx(map, cameraPosition.x, cameraPosition.y, TRUE);
+	MAP_scrollToEx(map_bg, cameraPosition.x, cameraPosition.y, TRUE);
 }
 
 void updateCamera() {
@@ -42,4 +43,7 @@ void updateCamera() {
 
 	//Finally we update the position of the camera
 	MAP_scrollTo(map, cameraPosition.x, cameraPosition.y);
+
+	// Scroll the background
+	MAP_scrollTo(map_bg, cameraPosition.x >> 1, cameraPosition.y >> 1);
 }

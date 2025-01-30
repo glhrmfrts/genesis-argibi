@@ -9,6 +9,7 @@ static u16* currentMap;
 //Downlscaled size of the map in order to match the collision map size
 Vect2D_u16 mapTileSize;
 AABB mapSize;
+Vect2D_u16 mapStartTilePos;
 
 void CTILE_free() {
 	//We have to free the collision map data in this way in order to avoid memory leaks
@@ -30,6 +31,10 @@ void CTILE_init(const cTileData* tiledata, u32 len, u16 width, u16 height) {
   for (u32 i = 0; i < len; i++) {
 		const cTileData* t = tiledata + i;
     currentMap[t->idx] = t->tileid;
+		if (t->tileid == START_TILE) {
+			mapStartTilePos.x = t->idx % width;
+			mapStartTilePos.y = t->idx / height;
+		}
   }
 }
 

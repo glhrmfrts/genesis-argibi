@@ -5,6 +5,7 @@
 const f16 gravityScale = FIX16(0.5);
 
 Map* map;
+Map* map_bg;
 
 void inGameJoyEvent(u16 joy, u16 changed, u16 state);
 
@@ -17,10 +18,22 @@ int main()
 	SPR_init();
 
 	u16 ind = TILE_USER_INDEX;
+
+	if (true) {
+		VDP_loadTileSet(&map_bg_tileset, ind, DMA);
+		PAL_setPalette(BACKGROUND_PALETTE, map_bg_palette.data, DMA);
+		map_bg = MAP_create(&map_bg_map, BACKGROUND_PLANE, TILE_ATTR_FULL(BACKGROUND_PALETTE, FALSE, FALSE, FALSE, ind));
+		MAP_scrollTo(map_bg, 100, 100);
+		ind += map_bg_tileset.numTile;
+	}
+
 	VDP_loadTileSet(&map_tileset, ind, DMA);
 	PAL_setPalette(LEVEL_PALETTE, map_palette.data, DMA);
-	map = MAP_create(&map_map, TILEMAP_PLANE, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, ind));
+	map = MAP_create(&map_map, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, ind));
 	MAP_scrollTo(map, 100, 100);
+	ind += map_tileset.numTile;
+
+	DMA_flushQueue();
 
 	JOY_setEventHandler(inGameJoyEvent);
 
@@ -42,6 +55,8 @@ int main()
 	// Init camera
 
 	setupCamera(newVector2D_u16(160, 112), 20, 20);
+
+	//DMA_setBufferSizeToDefault();
 
 	while (TRUE) {
 		updatePlayer();
