@@ -13,7 +13,7 @@ GameState inGameState;
 int main()
 {
 	SPR_init();
-	
+
 	JOY_setEventHandler(GS_joyHandler);
 
 	startState.enterFunc = startInit;

@@ -4,7 +4,7 @@
 #include <resources.h>
 #include "gamestate.h"
 
-#define TILEMAP_PLANE BG_A
+#define FOREGROUND_PLANE BG_A
 #define BACKGROUND_PLANE BG_B
 
 #define LEVEL_PALETTE  			PAL0
@@ -12,6 +12,9 @@
 #define PLAYER_PALETTE 			PAL2
 
 // tile values
+#define RED_TILE 1
+#define GREEN_TILE 2
+#define BLUE_TILE 3
 #define GROUND_TILE 4
 #define START_TILE 	50
 #define EXIT_TILE   18

@@ -4,7 +4,7 @@
 
 //Dynamic 2D array where we store the collision map data
 //We could read that directly from ROM but in the long term it's cleaner and/or more performant
-static u16* currentMap;
+static u16* currentMap = NULL;
 
 //Downlscaled size of the map in order to match the collision map size
 Vect2D_u16 mapTileSize;
@@ -13,10 +13,15 @@ Vect2D_u16 mapStartTilePos;
 
 void CTILE_free() {
 	//We have to free the collision map data in this way in order to avoid memory leaks
-	MEM_free(currentMap);
+	if (currentMap) {
+		MEM_free(currentMap);
+		currentMap = NULL;
+	}
 }
 
 void CTILE_init(const cTileData* tiledata, u32 len, u16 width, u16 height) {
+	CTILE_free();
+
 	// Each tile is 16x16 px so shift up by 4 to get pixel size
 
 	mapTileSize = newVector2D_u16(width, height);

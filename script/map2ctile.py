@@ -22,6 +22,9 @@ with open(filename, 'r') as fh:
   dst_file_c.write(f'#include "../{dst_filename_h}"\n')
 
   for i,layer in enumerate(data['layers']):
+    if layer['name'] == 'background':
+      continue
+
     layersize = len(layer['data'])
     non_zero_tiles = 0
 

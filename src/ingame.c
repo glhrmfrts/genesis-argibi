@@ -11,7 +11,7 @@ const f16 gravityScale = FIX16(0.5);
 Map* map;
 Map* map_bg;
 
-int currentLevel = 1;
+int currentLevel = 0;
 
 void loadLevel(int level) {
     LevelDef* ldef = &levels[level];
@@ -22,14 +22,12 @@ void loadLevel(int level) {
     VDP_loadTileSet(ldef->bg.tileset, ind, DMA);
     PAL_setPalette(BACKGROUND_PALETTE, ldef->bg.palette->data, DMA);
     map_bg = MAP_create(ldef->bg.map, BACKGROUND_PLANE, TILE_ATTR_FULL(BACKGROUND_PALETTE, FALSE, FALSE, FALSE, ind));
-    MAP_scrollTo(map_bg, 100, 100);
     ind += ldef->bg.tileset->numTile;
 
     // load foreground
 	VDP_loadTileSet(ldef->fg.tileset, ind, DMA);
 	PAL_setPalette(LEVEL_PALETTE, ldef->fg.palette->data, DMA);
-	map = MAP_create(ldef->fg.map, TILEMAP_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, ind));
-	MAP_scrollTo(map, 100, 100);
+	map = MAP_create(ldef->fg.map, FOREGROUND_PLANE, TILE_ATTR_FULL(LEVEL_PALETTE, FALSE, FALSE, FALSE, ind));
 	ind += ldef->fg.tileset->numTile;
 
     // Init collision tiles

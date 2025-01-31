@@ -35,6 +35,11 @@ const u16 oneWayPlatformErrorCorrection = 5;
 s16 stairLeftEdge;
 const u16 stairPositionOffset = 4;
 
+const int jumpButton = BUTTON_A;
+const int colorButton = BUTTON_B;
+bool playerChangedColor = false;
+int nonColoredAnimation = ANIM_IDLE;
+
 //Player collider bounds position
 AABB playerBounds;
 
@@ -61,7 +66,7 @@ void playerInit() {
 	playerBody.centerOffset.x = ((playerBody.aabb.min.x + playerBody.aabb.max.x) >> 1);
 	playerBody.centerOffset.y = ((playerBody.aabb.min.y + playerBody.aabb.max.y) >> 1);
 
-	//Default movement values
+	// Default movement values
 	playerBody.speed = 2;
 	playerBody.climbingSpeed = 1;
 	playerBody.maxFallSpeed = 6;
@@ -69,6 +74,8 @@ void playerInit() {
 	playerBody.facingDirection = 1;
 	playerBody.acceleration = FIX16(.25);
 	playerBody.deceleration = FIX16(.2);
+
+	playerBody.color = COL_RED;
 
 	//Setup the jump SFX with an index between 64 and 255
 	// XGM_setPCM(64, jump, sizeof(jump));
@@ -92,8 +99,8 @@ void playerInputChanged() {
 
 		//Jump button via jumpbuffer
 		//Also used to stop climbing the stairs
-		if (changed & (BUTTON_A | BUTTON_B | BUTTON_C)) {
-			if (state & (BUTTON_A | BUTTON_B | BUTTON_C)) {
+		if (changed & jumpButton) {
+			if (state & jumpButton) {
 				if (playerBody.climbingStair) {
 					playerBody.climbingStair = FALSE;
 				}else {
@@ -102,6 +109,16 @@ void playerInputChanged() {
 			}else if (playerBody.jumping && playerBody.velocity.fixY < 0) {
 				//If the button is released we remove half of the velocity
 				playerBody.velocity.fixY = fix16Mul(playerBody.velocity.fixY, FIX16(.5));
+			}
+		}
+
+		if (changed & colorButton) {
+			if (state & colorButton) {
+				playerBody.color += 1;
+				if (playerBody.color > COL_BLUE) {
+					playerBody.color = COL_RED;
+				}
+				playerChangedColor = TRUE;
 			}
 		}
 
@@ -157,6 +174,7 @@ void updatePlayer() {
 		currentCoyoteTime = 0;
 		currentJumpBufferTime = 0;
 	}
+
 	//The ground hasn't been checked yet so we only decrease the jump buffer time for now
 	currentJumpBufferTime = clamp((currentJumpBufferTime - 1), 0, jumpBufferTime); //Clamp to avoid underflowing, it is unlikely to happen but can happen
 
@@ -221,6 +239,15 @@ void updatePlayer() {
 	}
 }
 
+static s16 getColoredAnimationIndex(s16 anim) {
+	return anim + playerBody.color*NUM_ANIM;
+}
+
+static void setPlayerAnimation(s16 anim) {
+	SPR_setAnim(playerBody.sprite, getColoredAnimationIndex(anim));
+	nonColoredAnimation = anim;
+}
+
 void updateAnimations() {
 	// Sprite flip depending on the horizontal input
 	if (playerBody.input.x > 0) {
@@ -234,18 +261,36 @@ void updateAnimations() {
 	//If the player is on ground and not climbing the stair it can be idle or running
 	if (playerBody.velocity.fixY == 0 && !playerBody.climbingStair) {
 		if (playerBody.velocity.x != 0 && runningAnim == FALSE && playerBody.onGround) {
-			SPR_setAnim(playerBody.sprite, 1);
+			setPlayerAnimation(ANIM_WALK);
 			runningAnim = TRUE;
 		}else if (playerBody.velocity.x == 0 && playerBody.onGround) {
-			SPR_setAnim(playerBody.sprite, 0);
+			setPlayerAnimation(ANIM_IDLE);
 			runningAnim = FALSE;
 		}
 	}
 
+	if (!playerBody.onGround && fix16ToInt(playerBody.velocity.fixY) > 1) {
+		setPlayerAnimation(ANIM_FALL);
+		runningAnim = false;
+	}
+
 	//Climb animation
 	if (playerBody.climbingStair) {
-		SPR_setAnim(playerBody.sprite, 2);
+		setPlayerAnimation(ANIM_FALL);
 	}
+
+// Force update the animation if the player changed color
+	if (playerChangedColor) {
+		setPlayerAnimation(nonColoredAnimation);
+	}
+}
+
+static bool playerShouldCollideWithTile(u16 tileValue) {
+	// Player can collide with ground or with tiles of different color from their own
+	if (tileValue >= RED_TILE && tileValue <= GROUND_TILE) {
+		return (tileValue == GROUND_TILE) || (playerBody.color+1 != tileValue);
+	}
+	return false;
 }
 
 void checkCollisions() {
@@ -287,17 +332,17 @@ void checkCollisions() {
 
 	//First we check for horizontal collisions
 	for (u16 i = 0; i <= tileBoundDifference.y; i++) {
-		//Height position constant as a helper
+		// Height position constant as a helper
 		const u16 y = minTilePos.y + i;
 
-		//Right position constant as a helper
+		// Right position constant as a helper
 		const u16 rx = maxTilePos.x;
 
 		bool isExit = false;
 
 		u16 rTileValue = CTILE_getTileValue(rx, y);
 		//After getting the tile value, we check if that is one of whom we can collide/trigger with horizontally
-		if (rTileValue == GROUND_TILE) {
+		if (playerShouldCollideWithTile(rTileValue)) {
 			AABB tileBounds = getTileBounds(rx, y);
 			//Before taking that tile as a wall, we have to check if that is within the player hitbox, e.g. not seeing ground as a wall
 			if (tileBounds.min.x < levelLimits.max.x && tileBounds.min.y < playerFeetPos && tileBounds.max.y > playerHeadPos) {
@@ -316,20 +361,20 @@ void checkCollisions() {
 
 		u16 lTileValue = CTILE_getTileValue(lx, y);
 		//We do the same here but for the left side
-		if (lTileValue == GROUND_TILE) {
+		if (playerShouldCollideWithTile(lTileValue)) {
 			AABB tileBounds = getTileBounds(lx, y);
 			if (tileBounds.max.x > levelLimits.min.x && tileBounds.min.y < playerFeetPos && tileBounds.max.y > playerHeadPos) {
 				levelLimits.min.x = tileBounds.max.x;
 				break;
 			}
-		}else if (lTileValue == LADDER_TILE) {
+		} else if (lTileValue == LADDER_TILE) {
 			stairLeftEdge = getTileLeftEdge(lx);
 			collidingAgainstStair = TRUE;
 		} else if (lTileValue == EXIT_TILE) {
 			isExit = true;
 		}
 
-		if (isExit) {
+		if (isExit && (playerBody.color+1 != GREEN_TILE)) {
 			SYS_hardReset();
 		}
 	}

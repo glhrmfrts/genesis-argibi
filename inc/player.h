@@ -36,9 +36,11 @@ struct pBody {
 		fix16 fixX;
 		s16 x;
 		fix16 fixY;
-	}velocity;
+	} velocity;
 
 	Vect2D_s16 input;
+
+	int color;
 };
 
 extern struct pBody playerBody;

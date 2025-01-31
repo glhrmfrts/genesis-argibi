@@ -6,7 +6,7 @@ void GS_change(GameState* newState) {
 	if (currentState && currentState->leaveFunc) {
 		currentState->leaveFunc(newState);
 	}
-	
+
 	if (newState && newState->enterFunc) {
 		newState->enterFunc(currentState);
 	}
