@@ -7,6 +7,8 @@
     "*.partial": "mustache",
     "genesis.h": "c",
     "types.h": "c",
-    "map_collisiondata.h": "c"
+    "map_collisiondata.h": "c",
+    "start.h": "c",
+    "help.h": "c"
   }
 }

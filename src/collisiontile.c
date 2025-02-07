@@ -19,6 +19,8 @@ void CTILE_free() {
 	}
 }
 
+bool SEEKING = false;
+
 void CTILE_init(const cTileData* tiledata, u32 len, u16 width, u16 height) {
 	CTILE_free();
 
@@ -38,7 +40,7 @@ void CTILE_init(const cTileData* tiledata, u32 len, u16 width, u16 height) {
     currentMap[t->idx] = t->tileid;
 		if (t->tileid == START_TILE) {
 			mapStartTilePos.x = t->idx % width;
-			mapStartTilePos.y = t->idx / height;
+			mapStartTilePos.y = t->idx / width;
 		}
   }
 }

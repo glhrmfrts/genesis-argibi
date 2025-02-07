@@ -16,7 +16,7 @@ void startUpdate() {
 void startJoyEvent(u16 joy, u16 changed, u16 state) {
     if (joy == JOY_1) {
         if ((changed & BUTTON_START) && (state & BUTTON_START)) {
-            GS_change(&inGameState);
+            GS_change(&menuState);
         }
     }
 }

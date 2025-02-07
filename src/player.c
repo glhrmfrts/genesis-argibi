@@ -49,7 +49,7 @@ void playerInit() {
 	playerBody.sprite = SPR_addSprite(
     &player_sprite,
     mapStartTilePos.x << 4, mapStartTilePos.y << 4,
-    TILE_ATTR(PLAYER_PALETTE, FALSE, FALSE, FALSE));
+    TILE_ATTR(PLAYER_PALETTE, false, false, false));
 
 	PAL_setPalette(PLAYER_PALETTE, player_sprite.palette->data, DMA);
 
@@ -81,6 +81,8 @@ void playerInit() {
 	// XGM_setPCM(64, jump, sizeof(jump));
 }
 
+fix16 gravityFactor = FIX16(1.0);
+
 void playerInputChanged() {
 	u16 joy = input.joy;
 	u16 state = input.state;
@@ -102,7 +104,7 @@ void playerInputChanged() {
 		if (changed & jumpButton) {
 			if (state & jumpButton) {
 				if (playerBody.climbingStair) {
-					playerBody.climbingStair = FALSE;
+					playerBody.climbingStair = false;
 				}else {
 					currentJumpBufferTime = jumpBufferTime;
 				}
@@ -118,7 +120,7 @@ void playerInputChanged() {
 				if (playerBody.color > COL_BLUE) {
 					playerBody.color = COL_RED;
 				}
-				playerChangedColor = TRUE;
+				playerChangedColor = true;
 			}
 		}
 
@@ -126,12 +128,15 @@ void playerInputChanged() {
 		//NOTE: Up direction is -1 and down direction is 1, this is because the Mega Drive draws the screen from top to bottom
 		if (changed & BUTTON_DOWN) {
 			if (state & BUTTON_DOWN) {
+
+				gravityFactor = FIX16(1.0);
+
 				playerBody.input.y = 1;
 				if (playerBody.climbingStair) {
 					playerBody.velocity.fixY = FIX16(playerBody.climbingSpeed);
 				}else if (playerBody.onStair) {
 					playerBody.velocity.fixY = FIX16(playerBody.climbingSpeed);
-					playerBody.climbingStair = TRUE;
+					playerBody.climbingStair = true;
 				}
 			}else {
 				playerBody.input.y = 0;
@@ -142,9 +147,12 @@ void playerInputChanged() {
 		}
 		if (changed & BUTTON_UP) {
 			if (state & BUTTON_UP) {
+
+				gravityFactor = FIX16(0.0);
+
 				playerBody.input.y = -1;
 				if (collidingAgainstStair && !playerBody.onStair) {
-					playerBody.climbingStair = TRUE;
+					playerBody.climbingStair = true;
 					playerBody.velocity.fixY = FIX16(-playerBody.climbingSpeed);
 				}
 			}else {
@@ -160,13 +168,13 @@ void playerInputChanged() {
 void updatePlayer() {
 	//Check if the player wants to climb a stair
 	if(collidingAgainstStair && ((playerBody.onStair && playerBody.input.y > 0) || (!playerBody.onStair && playerBody.input.y < 0))){
-		playerBody.climbingStair = TRUE;
+		playerBody.climbingStair = true;
 		playerBody.velocity.fixY = FIX16(playerBody.climbingSpeed * playerBody.input.y);
 	}
 
 	//Check if player wants to jump by looking the coyote time and jump buffer
 	if (currentCoyoteTime > 0 && currentJumpBufferTime > 0) {
-		playerBody.jumping = TRUE;
+		playerBody.jumping = true;
 		//Play the SFX with the index 64 (jump sfx) with the highest priority
 		XGM_startPlayPCM(64, 15, SOUND_PCM_CH2);
 		playerBody.velocity.fixY = FIX16(-playerBody.jumpSpeed);
@@ -203,7 +211,7 @@ void updatePlayer() {
 	//Apply gravity with a terminal velocity
 	if (!playerBody.onGround && !playerBody.climbingStair) {
 		if (fix16ToInt(playerBody.velocity.fixY) <= playerBody.maxFallSpeed) {
-			playerBody.velocity.fixY = playerBody.velocity.fixY + gravityScale;
+			playerBody.velocity.fixY = playerBody.velocity.fixY + fix16Mul(gravityScale, gravityFactor);
 		}else {
 			playerBody.velocity.fixY = FIX16(playerBody.maxFallSpeed);
 		}
@@ -218,7 +226,7 @@ void updatePlayer() {
 
 	//Now that the collisions have been checked, we know if the player is on a stair or not
 	if (!collidingAgainstStair && playerBody.climbingStair) {
-		playerBody.climbingStair = FALSE;
+		playerBody.climbingStair = false;
 		playerBody.input.y = 0;
 	}
 
@@ -251,21 +259,21 @@ static void setPlayerAnimation(s16 anim) {
 void updateAnimations() {
 	// Sprite flip depending on the horizontal input
 	if (playerBody.input.x > 0) {
-		SPR_setHFlip(playerBody.sprite, FALSE);
+		SPR_setHFlip(playerBody.sprite, false);
 		playerBody.facingDirection = 1;
 	}else if (playerBody.input.x < 0) {
-		SPR_setHFlip(playerBody.sprite, TRUE);
+		SPR_setHFlip(playerBody.sprite, true);
 		playerBody.facingDirection = -1;
 	}
 
 	//If the player is on ground and not climbing the stair it can be idle or running
 	if (playerBody.velocity.fixY == 0 && !playerBody.climbingStair) {
-		if (playerBody.velocity.x != 0 && runningAnim == FALSE && playerBody.onGround) {
+		if (playerBody.velocity.x != 0 && runningAnim == false && playerBody.onGround) {
 			setPlayerAnimation(ANIM_WALK);
-			runningAnim = TRUE;
+			runningAnim = true;
 		}else if (playerBody.velocity.x == 0 && playerBody.onGround) {
 			setPlayerAnimation(ANIM_IDLE);
-			runningAnim = FALSE;
+			runningAnim = false;
 		}
 	}
 
@@ -295,7 +303,7 @@ static bool playerShouldCollideWithTile(u16 tileValue) {
 
 void checkCollisions() {
 	//As we now have to check for collisions, we will later check if it is true or false, but for now it is false
-	collidingAgainstStair = FALSE;
+	collidingAgainstStair = false;
 
 	//Create level limits
 	AABB levelLimits = mapSize;
@@ -351,7 +359,7 @@ void checkCollisions() {
 			}
 		} else if (rTileValue == LADDER_TILE) {
 			stairLeftEdge = getTileLeftEdge(rx);
-			collidingAgainstStair = TRUE;
+			collidingAgainstStair = true;
 		} else if (rTileValue == EXIT_TILE) {
 			isExit = true;
 		}
@@ -369,7 +377,7 @@ void checkCollisions() {
 			}
 		} else if (lTileValue == LADDER_TILE) {
 			stairLeftEdge = getTileLeftEdge(lx);
-			collidingAgainstStair = TRUE;
+			collidingAgainstStair = true;
 		} else if (lTileValue == EXIT_TILE) {
 			isExit = true;
 		}
@@ -411,7 +419,7 @@ void checkCollisions() {
 	maxTilePos = posToTile(newVector2D_s16(playerBounds.max.x - 1, playerBounds.max.y));
 	tileBoundDifference = newVector2D_u16(maxTilePos.x - minTilePos.x, maxTilePos.y - minTilePos.y);
 
-	bool onStair = FALSE;
+	bool onStair = false;
 
 	//To avoid having troubles with player snapping to ground ignoring the upward velocity, we separate top and bottom collisions depending on the velocity
 	if (yIntVelocity >= 0) {
@@ -421,6 +429,19 @@ void checkCollisions() {
 
 			//This is the exact same method that we use for horizontal collisions
 			u16 bottomTileValue = CTILE_getTileValue(x, y);
+
+#if 0
+			static char str[20];
+
+			intToStr((s16)bottomTileValue, str, 2);
+			str[2] = ' ';
+			intToStr(x, str + 3, 2);
+			str[5] = ' ';
+			intToStr(y, str + 6, 2);
+
+			VDP_drawText(str, 5, 5);
+#endif
+
 			if (bottomTileValue == GROUND_TILE || bottomTileValue == ONE_WAY_PLATFORM_TILE) {
 				if (getTileRightEdge(x) == levelLimits.min.x || getTileLeftEdge(x) == levelLimits.max.x)
 					continue;
@@ -436,11 +457,13 @@ void checkCollisions() {
 				u16 bottomEdgePos = getTileTopEdge(y);
 				//Only in this case we check for ladder collisions, as we need them to climb them down
 				if (bottomEdgePos <= levelLimits.max.y && bottomEdgePos >= playerFeetPos && !playerBody.climbingStair && CTILE_getTileValue(x, y - 1) != LADDER_TILE) {
-					collidingAgainstStair = TRUE;
-					onStair = TRUE;
+					collidingAgainstStair = true;
+					onStair = true;
 					levelLimits.max.y = bottomEdgePos;
 					break;
 				}
+			} else {
+				//VDP_clearText(5, 5, 10);
 			}
 		}
 	}else {
@@ -461,7 +484,7 @@ void checkCollisions() {
 				}
 			}else if (topTileValue == LADDER_TILE) {
 				stairLeftEdge = getTileLeftEdge(x);
-				collidingAgainstStair = TRUE;
+				collidingAgainstStair = true;
 			}
 		}
 	}
@@ -473,18 +496,18 @@ void checkCollisions() {
 	}
 	if (levelLimits.max.y <= playerBounds.max.y) {
 		if (levelLimits.max.y == 768) {
-			playerBody.falling = TRUE;
+			playerBody.falling = true;
 		}else {
 			playerBody.onStair = onStair;
-			playerBody.onGround = TRUE;
-			playerBody.climbingStair = FALSE;
+			playerBody.onGround = true;
+			playerBody.climbingStair = false;
 			currentCoyoteTime = coyoteTime;
-			playerBody.jumping = FALSE;
+			playerBody.jumping = false;
 			playerBody.globalPosition.y = levelLimits.max.y - playerBody.aabb.max.y;
 			playerBody.velocity.fixY = 0;
 		}
 	}else {
-		playerBody.onStair = playerBody.onGround = FALSE;
+		playerBody.onStair = playerBody.onGround = false;
 		currentCoyoteTime--;
 	}
 	//This time we don't need to update the playerBounds as they will be updated at the beginning of the function the next frame

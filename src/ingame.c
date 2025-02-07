@@ -1,17 +1,19 @@
-#include "../inc/ingame.h"
-#include "../inc/global.h"
-#include "../inc/player.h"
-#include "../inc/camera.h"
-#include "../inc/levels.h"
+#include "ingame.h"
+#include "global.h"
+#include "player.h"
+#include "camera.h"
+#include "levels.h"
 
 #define SFX_IMPACT 64
 
-const f16 gravityScale = FIX16(0.5);
+const f16 gravityScale = FIX16(0.1);
 
 Map* map;
 Map* map_bg;
 
 int currentLevel = 0;
+
+extern bool SEEKING;
 
 void loadLevel(int level) {
     LevelDef* ldef = &levels[level];
@@ -77,4 +79,9 @@ void inGameUpdate() {
 	updatePlayer();
 	updateCamera();
 	SPR_update();
+
+	LevelDef* ldef = &levels[currentLevel];
+	static char str[20];
+	intToStr(ldef->collision.len, str, 2);
+	VDP_drawText(str, 6, 6);
 }

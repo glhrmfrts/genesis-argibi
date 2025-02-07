@@ -43,4 +43,6 @@ extern Map* map;
 extern Map* map_bg;
 
 extern GameState startState;
+extern GameState menuState;
 extern GameState inGameState;
+extern GameState helpState;
