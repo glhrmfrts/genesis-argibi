@@ -5,8 +5,8 @@
 void helpInit() {
   VDP_clearPlane(BG_A, true);
 
-  VDP_drawText("YOU DON'T COLLIDE WITH", 10, 10);
-  VDP_drawText("ANYTHING OF THE SAME", 10, 12);
+  VDP_drawText("YOU DON'T COLLIDE WITH", 10, 12);
+  VDP_drawText("ANYTHING OF THE SAME", 10, 13);
   VDP_drawText("COLOR AS YOU", 10, 14);
 }
 

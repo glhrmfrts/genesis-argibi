@@ -55,7 +55,7 @@ int main()
 	helpState.updateFunc = helpUpdate;
 	helpState.joyFunc = helpJoyEvent;
 
-	GS_change(&startState);
+	GS_change(&menuState);
 
 	while (TRUE) {
 		GS_update();

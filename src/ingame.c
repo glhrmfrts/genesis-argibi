@@ -6,7 +6,7 @@
 
 #define SFX_IMPACT 64
 
-const f16 gravityScale = FIX16(0.1);
+const f16 gravityScale = FIX16(0.4);
 
 Map* map;
 Map* map_bg;

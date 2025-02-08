@@ -2,6 +2,8 @@ SPRITE player_sprite "player.png" 8 8 FAST 12
 
 WAV snd_impact "impact_mid.wav" XGM
 
+IMAGE logo_image "logo.png" BEST ALL
+
 
 PALETTE map_palette "map.png"
 TILESET map_tileset "map.png" BEST ALL

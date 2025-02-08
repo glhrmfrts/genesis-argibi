@@ -242,7 +242,7 @@ void updatePlayer() {
 	if (playerBody.falling) {
 		dyingSteps++;
 		if(dyingSteps > dieDelay){
-			//SYS_hardReset();
+			//SYS_reset();
 		}
 	}
 }
@@ -383,7 +383,7 @@ void checkCollisions() {
 		}
 
 		if (isExit && (playerBody.color+1 != GREEN_TILE)) {
-			SYS_hardReset();
+			SYS_reset();
 		}
 	}
 
@@ -462,6 +462,8 @@ void checkCollisions() {
 					levelLimits.max.y = bottomEdgePos;
 					break;
 				}
+			} else if (bottomTileValue == EXIT_TILE) {
+				SYS_reset();
 			} else {
 				//VDP_clearText(5, 5, 10);
 			}
@@ -485,6 +487,8 @@ void checkCollisions() {
 			}else if (topTileValue == LADDER_TILE) {
 				stairLeftEdge = getTileLeftEdge(x);
 				collidingAgainstStair = true;
+			} else if (topTileValue == EXIT_TILE) {
+				SYS_reset();
 			}
 		}
 	}
